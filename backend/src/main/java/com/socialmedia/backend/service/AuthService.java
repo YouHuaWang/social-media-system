@@ -2,7 +2,10 @@ package com.socialmedia.backend.service;
 
 import com.socialmedia.backend.dto.request.RegisterRequest;
 import com.socialmedia.backend.dto.response.AuthResponse;
+import com.socialmedia.backend.exception.CustomException;
 import com.socialmedia.backend.repository.UserRepository;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,11 +46,17 @@ public class AuthService {
         }
 
         if (resultCode.intValue() == 0) {
-            throw new RuntimeException("手機號碼已註冊");
+            throw new CustomException (
+                "手機號碼已註冊",
+                HttpStatus.CONFLICT
+            );
         }
 
         if (resultCode.intValue() == -2) {
-            throw new RuntimeException("Email已註冊");
+            throw new CustomException (
+                "Email已註冊",
+                HttpStatus.CONFLICT
+            );
         }
 
         Number userId = (Number) result.get("P_USER_ID");

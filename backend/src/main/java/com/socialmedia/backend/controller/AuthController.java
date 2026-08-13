@@ -24,6 +24,8 @@ public class AuthController {
     public ResponseEntity<AuthResponse> register (
         @Valid @RequestBody RegisterRequest request
     ) {
+        System.out.println("=== AuthController reached ===");
+
         AuthResponse response = authService.register(request);
         return ResponseEntity.ok(response);
     }
