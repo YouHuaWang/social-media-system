@@ -6,6 +6,7 @@ import com.socialmedia.backend.dto.request.VerifyOtpRequest;
 import com.socialmedia.backend.dto.response.AuthResponse;
 import com.socialmedia.backend.exception.CustomException;
 import com.socialmedia.backend.repository.UserRepository;
+import com.socialmedia.backend.security.JwtService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,15 +21,18 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final VerificationCodeService verificationCodeService;
+    private final JwtService jwtService;
 
     public AuthService (
         UserRepository userRepository,
         PasswordEncoder passwordEncoder,
-        VerificationCodeService verificationCodeService
+        VerificationCodeService verificationCodeService,
+        JwtService jwtService
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.verificationCodeService = verificationCodeService;
+        this.jwtService = jwtService;
     }
 
     @Transactional
@@ -142,6 +146,7 @@ public class AuthService {
         );
     }
 
+    @Transactional
     public AuthResponse verifyOtp (VerifyOtpRequest request) {
 
         Map<String, Object> result = 
@@ -166,11 +171,13 @@ public class AuthService {
 
         verificationCodeService.verifyLoginOtp(userId.longValue(), request.otp());
 
+        String token = jwtService.generateToken(userId.longValue());
+
         return new AuthResponse(
             userId.longValue(), 
-            "OTP驗證成功，登入成功",
+            "登入成功",
             false,
-            null
+            token
         );
     }
 }
