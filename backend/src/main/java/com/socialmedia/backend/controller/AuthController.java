@@ -24,9 +24,15 @@ public class AuthController {
     public ResponseEntity<AuthResponse> register (
         @Valid @RequestBody RegisterRequest request
     ) {
-        System.out.println("=== AuthController reached ===");
-
         AuthResponse response = authService.register(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login (
+        @Valid @RequestBody LoginRequest request
+    ) {
+        AuthResponse response = authService.login(request);
         return ResponseEntity.ok(response);
     }
 }

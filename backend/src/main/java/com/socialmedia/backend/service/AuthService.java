@@ -1,5 +1,6 @@
 package com.socialmedia.backend.service;
 
+import com.socialmedia.backend.dto.request.LoginRequest;
 import com.socialmedia.backend.dto.request.RegisterRequest;
 import com.socialmedia.backend.dto.response.AuthResponse;
 import com.socialmedia.backend.exception.CustomException;
@@ -62,7 +63,48 @@ public class AuthService {
         Number userId = (Number) result.get("P_USER_ID");
 
         return new AuthResponse(
-            userId.longValue(), "註冊成功"
+            userId.longValue(), 
+            "註冊成功",
+            false,
+            null
+        );
+    }
+
+    public AuthResponse login (LoginRequest request) {
+
+        Map<String, Object> result = 
+            userRepository.login (
+                request.phone()
+            );
+
+        Number resultCode = (Number) result.get("P_RESULT");
+
+        if (resultCode == null) {
+            throw new CustomException("登入失敗", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        if (resultCode.intValue() == 0) {
+            throw new CustomException (
+                "手機號碼或密碼錯誤",
+                HttpStatus.UNAUTHORIZED
+            );
+        }
+
+        Number userId = (Number) result.get("P_USER_ID");
+
+        String passwordHash = (String) result.get("P_PASSWORD_HASH");
+
+        boolean passwordMacthes = passwordEncoder.matches(request.password(), passwordHash);
+
+        if (!passwordMacthes) {
+            throw new CustomException("手機號碼或密碼錯誤", HttpStatus.UNAUTHORIZED);
+        }
+
+        return new AuthResponse(
+            userId.longValue(), 
+            "登入成功",
+            false,
+            null
         );
     }
 }

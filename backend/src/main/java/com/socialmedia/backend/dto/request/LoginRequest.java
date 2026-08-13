@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
 public record LoginRequest(
-
+        
         @NotBlank(message = "請輸入手機號碼")
         @Pattern(
                 regexp = "^09\\d{8}$",
