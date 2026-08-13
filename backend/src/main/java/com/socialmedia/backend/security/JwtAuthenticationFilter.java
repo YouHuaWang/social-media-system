@@ -49,30 +49,43 @@ public class JwtAuthenticationFilter
             return;
         }
 
-        Long userId = jwtService.getUserId(token);
+        try {
 
-        if (
-            userId != null && 
-            SecurityContextHolder
-                .getContext()
-                .getAuthentication() == null
-        ) {
-            UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(
-                    userId,
-                    null,
-                    Collections.emptyList()
+            Long userId = jwtService.getUserId(token);
+
+            if (
+                userId != null &&
+                SecurityContextHolder
+                    .getContext()
+                    .getAuthentication() == null
+            ) {
+
+                UsernamePasswordAuthenticationToken
+                    authentication =
+                        new UsernamePasswordAuthenticationToken(
+                            userId,
+                            null,
+                            Collections.emptyList()
+                        );
+
+                authentication.setDetails(
+                    new WebAuthenticationDetailsSource()
+                        .buildDetails(request)
                 );
 
-            authentication.setDetails(
-                new WebAuthenticationDetailsSource().buildDetails(request)
-            );
-
+                SecurityContextHolder
+                    .getContext()
+                    .setAuthentication(
+                        authentication
+                    );
+            }
+        } catch (Exception e) {
             SecurityContextHolder
-                .getContext()
-                .setAuthentication(authentication);
+                .clearContext();
         }
-
-        filterChain.doFilter(request,response);
+        filterChain.doFilter(
+            request,
+            response
+        );
     }
 }

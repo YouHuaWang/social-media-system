@@ -51,7 +51,11 @@ public class JwtService {
             throw new JwtException("JWT subject 不存在");
         }
 
-        return Long.valueOf(subject);
+        try {
+            return Long.valueOf(subject);
+        } catch (NumberFormatException e) {
+            throw new JwtException("JWT USER_ID 格式錯誤");
+        }
     }
 
     public boolean isTokenValid(String token) {
@@ -61,7 +65,10 @@ public class JwtService {
                 .build()
                 .parseSignedClaims(token);
             return true;
-        } catch (JwtException | IllegalArgumentException e) {
+        } catch (
+            JwtException | 
+            IllegalArgumentException e
+        ) {
             return false;
         }
     }

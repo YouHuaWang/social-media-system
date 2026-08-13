@@ -1,0 +1,20 @@
+CREATE OR REPLACE PROCEDURE SP_GET_ALL_POSTS (
+    P_CURSOR OUT SYS_REFCURSOR
+)
+AS
+BEGIN
+    OPEN P_CURSOR FOR
+        SELECT
+            P.POST_ID,
+            P.USER_ID,
+            U.USER_NAME,
+            P.CONTENT,
+            P.IMAGE,
+            P.CREATED_AT,
+            P.UPDATED_AT
+        FROM POSTS P
+        INNER JOIN USERS U
+            ON P.USER_ID = U.USER_ID
+        ORDER BY P.CREATED_AT DESC;
+END SP_GET_ALL_POSTS;
+/
