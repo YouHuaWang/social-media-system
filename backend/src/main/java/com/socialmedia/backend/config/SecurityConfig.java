@@ -4,7 +4,7 @@ import com.socialmedia.backend.security.JwtAuthenticationFilter;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -31,8 +31,6 @@ public class SecurityConfig {
 
         return http
 
-            .cors(cors -> {})
-
             .csrf(csrf -> csrf.disable())
 
             .sessionManagement(session ->
@@ -45,16 +43,16 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
 
-                .requestMatchers(
-                    HttpMethod.OPTIONS,
-                    "/**"
-                ).permitAll()
+                .requestMatchers("/api/auth/**")
+                .permitAll()
 
-                .requestMatchers(
-                    "/api/auth/**"
-                ).permitAll()
+                .anyRequest()
+                .authenticated()
+            )
 
-                .anyRequest().authenticated()
+            .addFilterBefore(
+                jwtAuthenticationFilter,
+                UsernamePasswordAuthenticationFilter.class
             )
 
             .build();
