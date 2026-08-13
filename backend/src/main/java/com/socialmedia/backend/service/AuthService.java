@@ -2,6 +2,7 @@ package com.socialmedia.backend.service;
 
 import com.socialmedia.backend.dto.request.LoginRequest;
 import com.socialmedia.backend.dto.request.RegisterRequest;
+import com.socialmedia.backend.dto.request.VerifyOtpRequest;
 import com.socialmedia.backend.dto.response.AuthResponse;
 import com.socialmedia.backend.exception.CustomException;
 import com.socialmedia.backend.repository.UserRepository;
@@ -18,13 +19,16 @@ public class AuthService {
     
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final VerificationCodeService verificationCodeService;
 
     public AuthService (
         UserRepository userRepository,
-        PasswordEncoder passwordEncoder
+        PasswordEncoder passwordEncoder,
+        VerificationCodeService verificationCodeService
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.verificationCodeService = verificationCodeService;
     }
 
     @Transactional
@@ -43,7 +47,7 @@ public class AuthService {
         Number resultCode = (Number) result.get("P_RESULT");
 
         if (resultCode == null) {
-            throw new RuntimeException("註冊失敗");
+            throw new CustomException("註冊失敗", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         if (resultCode.intValue() == 0) {
@@ -60,7 +64,21 @@ public class AuthService {
             );
         }
 
+        if (resultCode.intValue() != 1) {
+            throw new CustomException (
+                "註冊失敗",
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+
         Number userId = (Number) result.get("P_USER_ID");
+
+        if (userId == null) {
+            throw new CustomException (
+                "註冊失敗",
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
 
         return new AuthResponse(
             userId.longValue(), 
@@ -90,9 +108,23 @@ public class AuthService {
             );
         }
 
+        if (resultCode.intValue() != 1) {
+            throw new CustomException (
+                "登入失敗",
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+
         Number userId = (Number) result.get("P_USER_ID");
 
         String passwordHash = (String) result.get("P_PASSWORD_HASH");
+
+        if (userId == null || passwordHash == null) {
+            throw new CustomException (
+                "登入失敗",
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
 
         boolean passwordMacthes = passwordEncoder.matches(request.password(), passwordHash);
 
@@ -100,9 +132,43 @@ public class AuthService {
             throw new CustomException("手機號碼或密碼錯誤", HttpStatus.UNAUTHORIZED);
         }
 
+        verificationCodeService.createLoginOtp(userId.longValue());
+
         return new AuthResponse(
             userId.longValue(), 
-            "登入成功",
+            "請輸入手機驗證碼",
+            true,
+            null
+        );
+    }
+
+    public AuthResponse verifyOtp (VerifyOtpRequest request) {
+
+        Map<String, Object> result = 
+            userRepository.login (
+                request.phone()
+            );
+
+        Number resultCode = (Number) result.get("P_RESULT");
+
+        if (resultCode == null || resultCode.intValue() != 1) {
+            throw new CustomException("使用者不存在", HttpStatus.UNAUTHORIZED);
+        }
+
+        Number userId = (Number) result.get("P_USER_ID");
+
+        if (userId == null) {
+            throw new CustomException (
+                "使用者不存在",
+                HttpStatus.UNAUTHORIZED
+            );
+        }
+
+        verificationCodeService.verifyLoginOtp(userId.longValue(), request.otp());
+
+        return new AuthResponse(
+            userId.longValue(), 
+            "OTP驗證成功，登入成功",
             false,
             null
         );

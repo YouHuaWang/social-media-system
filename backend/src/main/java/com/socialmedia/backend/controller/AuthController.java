@@ -1,6 +1,7 @@
 package com.socialmedia.backend.controller;
 
 import com.socialmedia.backend.dto.request.RegisterRequest;
+import com.socialmedia.backend.dto.request.VerifyOtpRequest;
 import com.socialmedia.backend.dto.request.LoginRequest;
 import com.socialmedia.backend.dto.response.AuthResponse;
 import com.socialmedia.backend.service.AuthService;
@@ -33,6 +34,14 @@ public class AuthController {
         @Valid @RequestBody LoginRequest request
     ) {
         AuthResponse response = authService.login(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<AuthResponse> verifyOtp (
+        @Valid @RequestBody VerifyOtpRequest request
+    ) {
+        AuthResponse response = authService.verifyOtp(request);
         return ResponseEntity.ok(response);
     }
 }
