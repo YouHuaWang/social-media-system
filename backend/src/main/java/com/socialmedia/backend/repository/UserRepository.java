@@ -8,13 +8,17 @@ import java.util.Map;
 
 @Repository
 public class UserRepository {
-    
+
     private final SimpleJdbcCall registerCall;
     private final SimpleJdbcCall loginCall;
+    private final SimpleJdbcCall getUserProfileCall;
 
     public UserRepository(JdbcTemplate jdbcTemplate) {
         this.registerCall = new SimpleJdbcCall(jdbcTemplate).withProcedureName("SP_REGISTER");
         this.loginCall = new SimpleJdbcCall(jdbcTemplate).withProcedureName("SP_LOGIN");
+        this.getUserProfileCall =
+            new SimpleJdbcCall(jdbcTemplate)
+                .withProcedureName("SP_GET_USER_PROFILE");
     }
 
     public Map<String, Object> register (
@@ -37,6 +41,17 @@ public class UserRepository {
         return loginCall.execute (
             Map.of(
                 "P_PHONE", phone
+            )
+        );
+    }
+
+    public Map<String, Object> getUserProfile (
+        Long userId
+    ) {
+
+        return getUserProfileCall.execute (
+            Map.of(
+                "P_USER_ID", userId
             )
         );
     }
