@@ -204,7 +204,7 @@ onMounted(() => {
 
         <div class="character-count">{{ postContent.length }} / 2000</div>
 
-        <input v-model="postImage" type="text" placeholder="圖片網址（選填）" maxlength="500" />
+        <!-- <input v-model="postImage" type="text" placeholder="圖片網址（選填）" maxlength="500" /> -->
 
         <button class="primary-button" :disabled="submitting" @click="submitPost">
           {{ submitting ? '發布中...' : '發布貼文' }}
