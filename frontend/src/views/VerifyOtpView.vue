@@ -6,14 +6,10 @@ import { verifyOtp } from '../api/authApi'
 import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
+
 const authStore = useAuthStore()
 
 const phone = sessionStorage.getItem('loginPhone')
-
-if (!phone) {
-  router.push('/login')
-}
-
 const otp = ref('')
 
 const loading = ref(false)
@@ -38,6 +34,8 @@ async function handleVerifyOtp() {
 
     router.push('/home')
   } catch (error) {
+    console.error('OTP 驗證失敗:', error)
+
     errorMessage.value = error.response?.data?.message || '驗證碼錯誤或已過期'
   } finally {
     loading.value = false
